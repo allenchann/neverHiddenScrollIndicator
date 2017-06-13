@@ -38,6 +38,14 @@
     return self;
 }
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    if (!firstAdd) {
+        [self flashScrollIndicators];
+        [self showIndicatorOrNotWithSize:self.contentSize];
+        firstAdd = YES;
+    }
+}
 ///是否需要显示滚动条
 - (void)showIndicatorOrNotWithSize:(CGSize)size {
     horizontalIndicator = [self valueForKey:@"_horizontalScrollIndicator"];
@@ -48,42 +56,21 @@
     if (size.width>self.frame.size.width) {
         [horizontalIndicator addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew context:nil];
     }
-
 }
 
 ///响应监听
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    ///判断是哪个视图响应的监听方法
-    if ([object isKindOfClass:[UIImageView class]]) {
-        ///获取到滚动条
-        UIImageView *scrollIndicator = object;
-        if ([change[@"new"] intValue] == 0) {
-            scrollIndicator.alpha = 1;
-        }
-    }else if ([object isKindOfClass:[UIScrollView class]]) {
-        ///先显示滚动条,因为滚动条是属于懒加载,此时可能滚动条所在的Imageview尚未初始化
-        CGSize size = [change[@"new"] CGSizeValue];
-        [self flashScrollIndicators];
-        ///判断是否显示滚动条
-        [self showIndicatorOrNotWithSize:size];
+    ///获取到滚动条
+    UIImageView *scrollIndicator = object;
+    if ([change[@"new"] intValue] == 0) {
+        scrollIndicator.alpha = 1;
     }
-    
 }
 
 ///移除监听
 - (void)dealloc {
     [verticalIndicator removeObserver:self forKeyPath:@"alpha"];
     [horizontalIndicator removeObserver:self forKeyPath:@"alpha"];
-}
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    if (!firstAdd) {
-        [self flashScrollIndicators];
-        [self showIndicatorOrNotWithSize:self.contentSize];
-        firstAdd = YES;
-    }
-    
 }
 
 /*
